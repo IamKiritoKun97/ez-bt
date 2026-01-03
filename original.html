@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easybet CS Hub | Ramon Tariao</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            600: '#7c3aed',
+                            900: '#4c1d95',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        [contenteditable]:focus { outline: 2px solid #7c3aed; background: #fff; }
+        .fade-in { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .copyable-title {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copyable-title:hover {
+            color: #7c3aed;
+            background-color: #f3f4f6;
+        }
+        .copyable-title:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 h-screen flex overflow-hidden">
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed top-0 w-full bg-brand-900 text-white z-50 flex items-center justify-between px-4 py-3">
+        <div class="font-bold flex items-center gap-2">
+            <i class="ph ph-headphones text-xl text-brand-500"></i> Easybet CS
+        </div>
+        <button id="mobileMenuBtn" class="p-2"><i class="ph ph-list text-2xl"></i></button>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-72 bg-gray-900 text-gray-300 flex flex-col fixed md:relative h-full z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+        <div class="p-6 border-b border-gray-800">
+            <h1 class="font-bold text-white text-xl">Script Hub</h1>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Agent: Ramon Tariao</p>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1" id="categoryNav"></nav>
+
+        <div class="p-4 border-t border-gray-800">
+            <button onclick="app.resetData()" class="w-full text-xs text-red-400 hover:bg-red-900/20 py-2 rounded transition-colors">
+                <i class="ph ph-arrows-counter-clockwise"></i> Reset All Scripts
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 flex flex-col h-full relative w-full pt-14 md:pt-0">
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="relative w-full sm:max-w-md">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="Search questions or keywords..." 
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 text-sm">
+            </div>
+            <div id="scriptCount" class="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">0 Scripts</div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50" id="mainScroll">
+            <div id="contentArea" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-12"></div>
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center h-64 text-gray-400">
+                <i class="ph ph-file-search text-5xl mb-2"></i>
+                <p>No matching scripts found.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+        <i class="ph ph-check-circle text-green-400 text-xl"></i>
+        <span id="toastMsg" class="text-sm font-medium">Copied to clipboard</span>
+    </div>
+
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden"></div>
+
+    <script>
+        const RAW_DATA = [
+            // 1. Account Queries
+            { cat: "Account Queries", q: "How do I recover my forgotten password?", link: "https://easybet.co.za/page/account-queries/forgot-password", a: "Click LOGIN at the top right corner of your screen. Next to Forgot password? Click RECOVER it.\n\nThe first option to recover your password is to choose MOBILE NUMBER.\n\nType in your mobile number\nClick PROCEED\nThe second option to recover your password is to choose EMAIL.\n\nType in your email address\nClick PROCEED\nAfter you have entered either your mobile number or email:\n\nA confirmation code will be sent to your cellphone or email\nEnter the confirmation code\nAfter you have entered the confirmation code:\n\nEnter your New Password\nRe-enter your New Password\nClick FINISH\nYour password has been reset successfully" },
+            { cat: "Account Queries", q: "How do I change my mobile number?", link: "https://easybet.co.za/page/account-queries/number-change", a: "To update your mobile number, please email customer support at help@easybet.co.za\n\nIf you need more information or help, please contact us via email or live chat.\n\nAny changes will require a re-submission of your FICA documents.\n\nID\nProof of Residence (Preferably a bank statement that should not be more than 3 months old)\nSelfie with your ID" },
+            { cat: "Account Queries", q: "How do I change my email address?", link: "https://easybet.co.za/page/account-queries/change-email", a: "To update your email address, please email customer support at help@easybet.co.za\n\nIf you need more information or help, please contact us via email or live chat.\n\nAny changes will require a re-submission of your FICA documents.\n\nID\nProof of Residence (Preferably a bank statement that should not be more than 3 months old)\nSelfie with your ID" },
+            { cat: "Account Queries", q: "How do I view my bets?", link: "https://easybet.co.za/page/account-queries/view-bets", a: "Log in to your account, and click on your balance to enter the account menu.\n\nClick MY BETS.\n\nAll bets are arranged from the most recent to the latest.\n\nAll bet statuses will be displayed as Confirmed, Winner or Loser.\n\nConfirmed – Indicated by White Text\nWinner – Indicated by Green Text\nLoser – Indicated by Red Text\nTo view the full details of a bet, click on the specific ticket from the bet list." },
+            { cat: "Account Queries", q: "How do I edit my personal details?", link: "https://easybet.co.za/page/account-queries/edit-details", a: "To edit personal details like your ADDRESS and BANKING details, contact customer support via email at help@easybet.co.za\n\nIf you require further information or assistance, please get in touch with us via email/live chat/WhatsApp.\n\nAny changes will require a re-submission of your FICA documents." },
+            { cat: "Account Queries", q: "How can I turn off SMS or email notifications?", link: "https://easybet.co.za/page/account-queries/turn-off-emails", a: "Log in to your account and click on your BALANCE to enter the account menu.\n\nGo to USER INFO and then SETTINGS.\n\nHere you can turn off notifications and electronic communications.\nOnce you've turned these off, click SAVE MY SETTINGS." },
+            
+            // 2. App Queries
+            { cat: "App Queries", q: "How do I create an account?", link: "https://easybet.co.za/page/app-queries/create-an-account", a: "Click JOIN at the top of your screen.\n\nEnter your mobile number.\n\nA message with your registration code will be sent via SMS.\n\nEnter the verification code.\nProceed to fill out your personal details.\nFill in your details including your email and password. Note: Enter the same password twice for verification.\nCheck the TERMS AND CONDITIONS box then click CREATE ACCOUNT.\n\nContinue to check your account details, email, cellphone number and password.\nScroll down to fill in your personal details.\nScroll down to fill in your banking details, then click COMPLETE REGISTRATION to complete your account registration." },
+            { cat: "App Queries", q: "How do I download the Easybet app?", link: "https://easybet.co.za/page/app-queries/download-app", a: "Go to the SETTINGS icon on your Android device\n\nTap on SECURITY\n\nUnder DEVICE ADMINISTRATION, tick the box next to ALLOW UNKNOWN SOURCES\n\nA box will appear – tap OK and then come back to this webpage\nClick on the DOWNLOAD THE ANDROID APP button\n\nA box will appear – tap OK and the app will start downloading automatically\nPull down from the top of your screen to view notifications (this will show you the progress of the download)\n\nOnce the app has been downloaded, click INSTALL\n\nOnce the app is installed, click OPEN and sign up or log in\n\nIt's that easy!" },
+
+            // 3. Bet types
+            { cat: "Bet types", q: "What is a Single Bet?", link: "https://easybet.co.za/page/bet-types/single-bet", a: "Single bets are the simplest form of betting.\n\nYou predict an outcome, enter your desired stake (bet size) and place the bet.\n\nIf your prediction is correct, you win the bet. The winnings are calculated by multiplying the decimal odds by the stake." },
+            { cat: "Bet types", q: "What is a Multibet?", link: "https://easybet.co.za/page/bet-types/multibet", a: "If you place bets on two or more results (e.g. on two different soccer games), they are automatically displayed as a multi (parlay) bet.\n\nThe total odds are calculated by multiplying the odds of all the individual picks.\n\nPlease note that a multi (parlay) bet does not pay out anything unless all your picks are correct." },
+            { cat: "Bet types", q: "What are System Bets?", link: "https://easybet.co.za/page/bet-types/system-bets", a: "Once you've placed three or more picks (up to 30 different events) on the bet slip, you may start placing system bets.\n\nTo do so, click the “SYSTEM” tab at the top of the bet slip. The number of possible system bets depends on the number of predicted outcomes. The system bets possible with your picks will be displayed automatically.\n\nThe main difference between system and multi (parlay) bets is that you can win a system bet even if not all your picks are correct.\n\nFor example, in the case of a 2/3 system bet, you win even if only two of your three predictions turn out to be correct." },
+
+            // 4. Bonus Queries
+            { cat: "Bonus Queries", q: "Why is my 'Use My Bonus Money' button not working?", link: "https://easybet.co.za/page/bonus-queries/bonus-money", a: "Please click on your USERNAME on the top right and click on BONUS OFFERS.\n\nThen select the bonus you are trying to use.\n\nThere might be limits on the minimum odds you can bet on with that bonus.\n\nOur Sign Up Bonus only allows bets on odds at 2/1 (3.0) or higher.\n\nIf the odds are too low, then the button will not work." },
+            { cat: "Bonus Queries", q: "I have signed up but I haven't received my Sign Up Bonus?", link: "https://easybet.co.za/page/bonus-queries/sign-up-bonus", a: "Please note accounts are credited with the Sign Up Bonus shortly after registering and Sign Up Free Spins every 2 hours, including weekends. You will receive an SMS once it is credited." },
+            { cat: "Bonus Queries", q: "How do I transfer bonus funds to my main wallet?", link: "https://easybet.co.za/page/bonus-queries/transfer-funds", a: "Click on your BALANCE on the top right of your screen.\n\nClick on BONUS OFFERS.\n\nMake sure that Active is selected. When Active is selected, it will turn yellow.\n\nHere your promotion offers will be listed, including your bonuses.\n\nClick the WHITE ARROW on the far right to open the Bonus Wallets menu.\n\nYour turnover percentage must be 100% to transfer your funds. Otherwise, you have not met the bonus rollover requirements and you cannot transfer yet.\n\nMake sure that all bets are settled before you can transfer your bonus." },
+            { cat: "Bonus Queries", q: "I can’t find a promo code, can I still get a sign up bonus?", link: "https://easybet.co.za/page/bonus-queries/promo-code", a: "If you do not have a promo code, we will automatically credit your Bonus Wallet with R50 + 25 Bonus Rounds with the same terms and conditions." },
+            { cat: "Bonus Queries", q: "Where do I find a promo code?", link: "https://easybet.co.za/page/bonus-queries/find-promo-code", a: "On marketing material from one of our Easybet affiliates." },
+            { cat: "Bonus Queries", q: "How do I qualify for a sign up bonus?", link: "https://easybet.co.za/page/bonus-queries/qualify-sign-up-bonus", a: "You must register an Easybet online/mobile betting account.\nFill in the promo code on the second step of registering.\nYou will then automatically get a Sign Up Bonus." },
+            { cat: "Bonus Queries", q: "What is a bonus?", link: "https://easybet.co.za/page/bonus-queries/what-is-a-bonus", a: "A bonus is a token provided by Easybet for recreational purposes and can be used to place a bet.\n\nClick on your BALANCE on the top right of your screen.\n\nClick on BONUS OFFERS.\n\nHere you can view the Active and previous (History) bonus offers." },
+            { cat: "Bonus Queries", q: "How do I use my bonus funds?", link: "https://easybet.co.za/page/bonus-queries/bonus-funds", a: "Choose a match and make a selection.\n\nOnce you've made a selection, it should populate on the BETSLIP.\n\nEnter your stake.\n\nClick USE BONUS MONEY.\n\nHere you'll be able to view Eligible Bonus Offers.\n\nSelect the desired one and your bet will be placed.\n\nA message will appear on your screen confirming your bet." },
+            { cat: "Bonus Queries", q: "How do I check my bonus rollover requirements?", link: "https://easybet.co.za/page/bonus-queries/bonus-rollover", a: "Click on your BALANCE on the top right of your screen.\n\nClick on BONUS OFFERS.\n\nHere you can view the Active bonus offers.\n\nUnder Percentage, you can view your rollover progress.\n\nYou can view additional details regarding the bonus offer by clicking the drop-down at Percentage." },
+            { cat: "Bonus Queries", q: "What are the bonus limits?", link: "https://easybet.co.za/page/bonus-queries/bonus-limits", a: "You can view your bonus limits by clicking on your BALANCE on the top right of your screen.\n\nClick on BONUS OFFERS.\n\nAt Applies On, each bonus offer will list the games that it is compatible with.\n\nThe expiry date is also shown.\n\nYou can view additional details regarding the bonus offer by clicking the drop-down at Percentage." },
+            { cat: "Bonus Queries", q: "How do I claim my 150% Deposit Match bonus?", link: "https://easybet.co.za/page/bonus-queries/150-deposit-match", a: "Sign up for a betting account.\n\nMake your first deposit of at least R20.\n\nOnce you have met the requirements, claim your bonus via email or live chat." },
+            { cat: "Bonus Queries", q: "Where can I find my Sign Up Bonus Rounds?", link: "https://easybet.co.za/page/bonus-queries/bonus-bonusrounds", a: "Please note Sign Up Bonus Rounds are credited within 2 hours, including weekends. You will receive an SMS when your account has been credited.\n\nLog into your Easybet Account.\nClick EASY SPINS.\nOpen SWEET BONANZA.\nYou should receive a pop-up message: 'You have received 25 Bonus Rounds.'\nClick CONTINUE and Enjoy!" },
+
+            // 5. Deposit Queries
+            { cat: "Deposit Queries", q: "How do I make a deposit?", link: "https://easybet.co.za/page/deposit-queries/make-deposit", a: "Log in to your account and click on BALANCE to open the account menu.\n\nClick DEPOSIT in the account menu.\nYou will see a list of deposit options.\nSelect a deposit option to use. The selected option will be marked with a yellow dot.\nEnter the desired amount to deposit and click SUBMIT." },
+            { cat: "Deposit Queries", q: "Why can't I make a deposit?", link: "https://easybet.co.za/page/deposit-queries/cant-deposit", a: "There might be a few reasons why you cannot deposit:\n\nYour ID Document has not been verified.\nYour account may have been blocked\nIf you are experiencing any of these issues, please get in touch with us via email/live chat/WhatsApp." },
+            { cat: "Deposit Queries", q: "My deposit is not reflecting. What should I do?", link: "https://easybet.co.za/page/deposit-queries/deposit-reflecting", a: "Simply send our Customer Support team a message with your Easybet account details (Name & surname, email address or user ID), and we'll check our system for any possible issue.\n\nPlease be advised that you will be required to provide proof of payment." },
+            { cat: "Deposit Queries", q: "Deposit 1Voucher", link: "https://easybet.co.za/page/deposit-queries/deposit-1voucher", a: "LOG IN to your account and click DEPOSIT in the top right corner.\n\nClick 1 Voucher and SUBMIT.\n\nEnter the VOUCHER CODE and click Deposit.\n\nThe 'Transaction was Successful' message will appear on your screen. Click CLOSE to go back to your home page." },
+            { cat: "Deposit Queries", q: "Deposit OTT voucher", link: "https://easybet.co.za/page/deposit-queries/deposit-ott", a: "Log in to your account and click DEPOSIT in the top right corner.\n\nClick Deposit options where OTT is included.\n\nClick on OTT Voucher.\n\nEnter your OTT voucher code and click Deposit to recharge your account." },
+            { cat: "Deposit Queries", q: "Deposit Blu Voucher", link: "https://easybet.co.za/page/deposit-queries/deposit-bluvoucher", a: "Log in to your account and click DEPOSIT in the top right corner.\n\nClick BLU VOUCHER.\n\nEnter the Voucher Amount.\n\nEnter the Voucher code and click Deposit.\n\nThe 'Transaction was Successful' message will appear on your screen." },
+            { cat: "Deposit Queries", q: "Deposit Credit/Debit Card", link: "https://easybet.co.za/page/deposit-queries/deposit-creditcard", a: "Log in to your account and click DEPOSIT in the top right corner.\n\nClick on CALL PAY and select the CREDIT CARD option.\n\nEnter the deposit amount and click SUBMIT.\n\nContinue to fill in the required details.\n\nAfter filling in all the required details click SUBMIT, and your transfer/ deposit will be successful." },
+            { cat: "Deposit Queries", q: "Deposit OZOW", link: "https://easybet.co.za/page/deposit-queries/deposit-ozow", a: "Log in to your account and click DEPOSIT in the top right corner.\n\nClick OZOW INSTANT EFT.\n\nFill in the amount desired and click SUBMIT.\n\nYou will be prompted to select your bank.\n\nFill in your banking credentials to access your banking to complete your deposit." },
+            { cat: "Deposit Queries", q: "Deposit Snapscan", link: "https://easybet.co.za/page/deposit-queries/deposit-snapscan", a: "Log in to your account and click DEPOSIT in the top right corner.\n\nClick SNAPSCAN.\n\nEnter the Deposit Amount and click SUBMIT.\n\nSCAN THE QR using the SnapScan App to complete your deposit." },
+            { cat: "Deposit Queries", q: "Deposit Easyload", link: "https://easybet.co.za/page/deposit-queries/deposit-easyload", a: "Log in to your account and click DEPOSIT in the top right corner.\n\nClick EASYLOAD.\n\nEnter the Voucher number and click Deposit.\n\nThe 'Transaction was Successful' message will appear on your screen." },
+            { cat: "Deposit Queries", q: "Deposit Easybet Instant EFT", link: "https://easybet.co.za/page/deposit-queries/deposit-easybet", a: "Log in to your account and click DEPOSIT in the top right corner.\n\nClick EASYBET INSTANT EFT.\n\nEnter the amount, then click 'PLEASE PROCEED WITH DEPOSIT'.\n\nClick CONTINUE. You will be prompted to select your bank.\n\nFill in your banking credentials to access your banking to complete your deposit." },
+
+            // 6. FICA Queries
+            { cat: "FICA Queries", q: "How do I submit my FICA documents?", link: "https://easybet.co.za/page/fica-queries/fica-documents", a: "Please click on your USERNAME on the top right and click on USER INFO.\n\nClick VERIFICATION.\n\nUpload your ID document, and choose from one of the four different types of ID formats.\n\nUpload your proof of residence, and choose one of the two formats to upload from.\n\nClick UPLOAD to complete the FICA submission.\n\nConfirmation messages will appear on the top right corner of your screen.\n\nYou can also click HERE (https://easybet.co.za/page/verify-account). Your FICA documents can also be sent via live chat or fica@easybet.co.za." },
+            { cat: "FICA Queries", q: "Why do you require my FICA information?", link: "https://easybet.co.za/page/fica-queries/fica-regulations", a: "FICA regulations require us to keep a copy of your identity document (ID) and proof of address (no older than 3 months). This is required by law for account holders with Bookmakers in South Africa." },
+            { cat: "FICA Queries", q: "Why do you require a selfie holding my ID?", link: "https://easybet.co.za/page/fica-queries/", a: "As part of our identity verification process, you may be asked to provide a clear selfie while holding your original, valid ID. This step helps us confirm that the documents belong to you and protects all users against identity-related fraud." },
+
+            // 7. Lucky numbers & Betgames Queries
+            { cat: "Lucky numbers & Betgames Queries", q: "How do I play Lucky Numbers?", link: "https://easybet.co.za/page/numbers-betgames/numbers-luckynumbers", a: "LOG IN to your Easybet account.\n\nAt the top of your screen, click LUCKY NUMBERS.\n\nHere you'll find Lotteries List, Multi Pick and Results.\n\nOn the Lotteries List, you can search by typing in the draw name or by scrolling down.\n\nChoose a draw would like to place a bet on and once you have selected the draw, choose your numbers.\n\nScroll down and click ADD TO SLIP.\n\nCheck your betslip if your bet is correct.\n\nEnter your stake.\n\nAt the bottom, click PLACE YOUR BETS." },
+            { cat: "Lucky numbers & Betgames Queries", q: "How do I play BetGames?", link: "https://easybet.co.za/page/numbers-betgames/numbers-playbetgames", a: "LOG IN to your Easybet account.\n\nClick on BETGAMES and select your preferred game.\n\nSelect a betting category and choose the outcome of the draw.\n\nClick CONFIRM and your selection should appear on BETSLIP and PLACE BET.\n\nFor more info click HOW TO PLAY?" },
+
+            // 8. Registration Queries
+            { cat: "Registration Queries", q: "How do I create an account?", link: "https://easybet.co.za/page/registration-queries/registration-account", a: "Click JOIN at the top of your screen.\n\nEnter your mobile number. Make sure the 'I'm not a robot' box is ticked and click SEND CODE.\n\nA message with your registration code will be sent via SMS.\n\nEnter the verification code.\n\nProceed to fill out your personal details.\n\nFill in your details, including your email and password. NOTE: Enter the same password twice for verification.\n\nMake sure the 'Read terms and conditions' box is ticked and click CREATE ACCOUNT.\n\nScroll down to fill in your personal/banking details, then click COMPLETE REGISTRATION." },
+            { cat: "Registration Queries", q: "Can I have more than one account?", link: "https://easybet.co.za/page/registration-queries/registration-duplicateaccount", a: "No. A customer can not register more than one betting account with Easybet.\n\nShould there be any additional registrations made using false information, Easybet reserves the right immediately to terminate the customer's betting account." },
+            { cat: "Registration Queries", q: "I can’t register because it says my details already exist.", link: "https://easybet.co.za/page/registration-queries/registration-existingaccount", a: "This means that you have already successfully registered with Easybet.\n\nSimply send our Customer Support team a message with your first and last name, email address, or ID Number, and we'll check to see whether you're in the system." },
+            { cat: "Registration Queries", q: "I have just registered but cannot place a bet.", link: "https://easybet.co.za/page/registration-queries/registration-placebet", a: "There might be a few reasons why you cannot place a bet:\n\n1. Your ID Document has not been verified.\n2. Your available balance is 0.00\n3. Your account may have been blocked\nIf you are experiencing any of these issues, please get in touch with us via email/live chat/WhatsApp." },
+            { cat: "Registration Queries", q: "I've made an error when registering an account.", link: "https://easybet.co.za/page/registration-queries/registration-accountdetials", a: "To edit personal details like your Address and Bank details, contact customer support email help@easybet.co.za.\n\nThese changes will require a re-submission of your FICA documents." },
+
+            // 9. Responsible Gambling
+            { cat: "Responsible Gambling", q: "How do I set a deposit limit?", link: "https://easybet.co.za/page/responsible-gambling/responsiblegambling-depositlimit", a: "Head to the MY PROFILE section of your account and select RESPONSIBLE GAMBLING.\n\nFrom here you can limit your deposits and set a deposit limit amount per day, per 7 days or 30 days.\n\nOnce you select the maximum deposit amount and timeframe, click the CONFIRM button and activate the limits with your password." },
+            { cat: "Responsible Gambling", q: "How do I temporarily deactivate my account?", link: "https://easybet.co.za/page/responsible-gambling/responsiblegambling-deactivate", a: "If you would like to take a break from betting, you can temporarily deactivate your account for a set period.\n\nHead to the MY PROFILE section of your account and select RESPONSIBLE GAMBLING.\n\nLook for the option that says TEMPORARILY DEACTIVATE MY ACCOUNT. You can select how long you would like to deactivate (1 month to 1 year)." },
+            { cat: "Responsible Gambling", q: "Can I delete My Account?", link: "https://easybet.co.za/page/responsible-gambling/responsiblegambling-delete", a: "If you would like to stop betting with us, you can permanently delete your account.\n\nHead to the MY PROFILE section of your account and select RESPONSIBLE GAMBLING. Look for the option that says DELETE MY ACCOUNT.\n\nPlease note that changes cannot be undone." },
+
+            // 10. Sports Betting Queries
+            { cat: "Sports Betting Queries", q: "How do I place a sports bet?", link: "https://easybet.co.za/page/sports-betting/sports-howtoplay", a: "LOG IN to your Easybet account.\n\nClick on SPORT and choose the sport you'd like to bet on.\n\nChoose a match and make a selection.\n\nOnce you've made a selection it should populate on your BETSLIP\n\nEnter your stake.\n\nClick PLACE YOUR BETS." },
+            { cat: "Sports Betting Queries", q: "How do I share a bet?", link: "https://easybet.co.za/page/sports-betting/sports-shareabet", a: "After making your bet selection, proceed to click BETSLIP.\n\nOnce BETSLIP is generated, click on ACCEPT ALL CHANGES.\n\nClick BOOK A BET. Your book a bet code will appear. Click the YELLOW ARROW to share the bet code.\n\nChoose COPY LINK to share. The receiver will use the link given to see the booked match." },
+            { cat: "Sports Betting Queries", q: "What is the maximum win on Easybet?", link: "https://easybet.co.za/page/sports-betting/sports-maxwin", a: "The maximum amount that one customer can win in one day's betting is R2 000 000." },
+            { cat: "Sports Betting Queries", q: "How do I place a soccer bet?", link: "https://easybet.co.za/page/sports-betting/sports-soccer", a: "LOG IN to your Easybet account.\n\nClick SPORT and select SOCCER.\n\nChoose a match and select your desired bet. i.e. Both Teams to Score: YES.\n\nEnter your stake on the Betslip and click PLACE YOUR BETS." },
+            { cat: "Sports Betting Queries", q: "How do I know if I've won a bet?", link: "https://easybet.co.za/page/sports-betting/sports-won", a: "LOG IN to your account, and click on your BALANCE to enter the account menu.\n\nClick MY BETS.\n\nIf the bet status displays as Winner (indicated by green text), then you've won that bet." },
+            { cat: "Sports Betting Queries", q: "How do betting odds work?", link: "https://easybet.co.za/page/sports-betting/sports-odds", a: "On Easybet, you can view odds in Decimal, Net Decimal, Fractional, and American formats.\n\nDecimal: Total payout = Odds x Stake.\nFractional: Potential win = Odds x Stake. (e.g., 2/1 on R100 wins R200).\nAmerican: Positive (+) shows win on R100, Negative (-) shows amount needed to win R100." },
+            { cat: "Sports Betting Queries", q: "My bet was settled incorrectly.", link: "https://easybet.co.za/page/sports-betting/sports-settlement", a: "Simply message our Customer Support team with your Betslip ID and account details (Name, email, or user ID). We'll check our system for any possible issue related to your bet." },
+            { cat: "Sports Betting Queries", q: "My bet has not been settled yet. Why not?", link: "https://easybet.co.za/page/sports-betting/sports-unsettled", a: "Reasons might include: Future date bet, game postponement, delayed official verification, or real-time live bet processing. For help, message us with your Betslip ID." },
+            { cat: "Sports Betting Queries", q: "I bet on a game that was postponed.", link: "https://easybet.co.za/page/sports-betting/sports-postponement", a: "The bet will be settled on the resumption of the game. Where an event is cancelled, all related bets will be void and the user account will be refunded." },
+            { cat: "Sports Betting Queries", q: "What is the maximum I can win on a bet?", link: "https://easybet.co.za/page/sports-betting/sports-betmax", a: "Payout Limits:\n- Sports Betting: R1,000,000\n- Virtual/BetGames: R50,000\n- Lucky Numbers: R1,000,000\n- Evolution: R5,000,000\n- Easy Spins (Slots): R5,000,000" },
+            { cat: "Sports Betting Queries", q: "How to Rebet", link: "https://easybet.co.za/page/sports-betting/sports-howtorebet", a: "Login to your Easybet account. Go to the Sports menu (https://easybet.co.za/sports). Proceed to My Bets and select the betslip you'd like to Rebet. Click Rebet and you're all set!" },
+
+            // 11. Vegas Games Queries
+            { cat: "Vegas Games Queries", q: "How do I play Vegas Games?", link: "https://easybet.co.za/page/vegas-games/vegasgames-howtoplay", a: "LOG IN to your Easybet Account. Click on VEGAS GAMES. From here select your preferred category and choose your preferred game. Place your wager and enjoy the live video stream." },
+
+            // 12. Withdrawal Queries
+            { cat: "Withdrawal Queries", q: "How long will my withdrawal take?", link: "https://easybet.co.za/page/withdrawal-queries/withdrawal-process", a: "Withdrawals generally take between one (1) to two (2) business days to reflect in your bank account.\n\nIf you have not received your money after 2 business days, please email help@easybet.co.za with your username, date, and amount." },
+            { cat: "Withdrawal Queries", q: "What withdrawal methods can I use?", link: "https://easybet.co.za/page/withdrawal-queries/withdrawal-methods", a: "Funds can be withdrawn using: OZOW, Instant Money, or eWallet using OTT. The account must belong to you and be registered in your name." },
+            { cat: "Withdrawal Queries", q: "How do I add my bank details?", link: "https://easybet.co.za/page/withdrawal-queries/withdrawal-bankdetails", a: "Click your BALANCE -> USER INFO -> MY DETAILS. At BANK DETAILS, enter your info.\n\nTo upload documents: Click VERIFICATION, select Type, upload your PDF/PNG/JPG, and click UPLOAD FILES." },
+            { cat: "Withdrawal Queries", q: "How do I update my bank details?", link: "https://easybet.co.za/page/withdrawal-queries/withdrawal-update", a: "To update details, provide a copy of your bank statement (not older than 3 months). Contact Customer Support and they will help you get your details loaded." },
+            { cat: "Withdrawal Queries", q: "How do I cancel a withdrawal?", link: "https://easybet.co.za/page/withdrawal-queries/withdrawal-cancel", a: "LOG IN to your account. Go to TRANSACTIONS and select the WITHDRAWAL option. Click CANCEL REQUEST under action." },
+            { cat: "Withdrawal Queries", q: "Why was my withdrawal rejected?", link: "https://easybet.co.za/page/withdrawal-queries/withdrawal-rejected", a: "Common reasons: Full deposit value not played through, bonus requirements not met (R99 real money bet at 2.0+ odds required for bonus wins), bank details couldn't be verified, or initial withdrawal not directed to a bank account." },
+            { cat: "Withdrawal Queries", q: "Why is my withdrawal delayed?", link: "https://easybet.co.za/page/withdrawal-queries/withdrawal-rejected", a: "For security reasons, we can only approve up to two withdrawals for your account every 24 hours. Your next withdrawal requests will be processed once the 24 hour period has passed." }
+        ];
+
+        class EasybetApp {
+            constructor() {
+                this.greetings = ["Hello there!", "Hi there!", "Good day!", "Greetings!"];
+                this.intro = "Thank you for reaching out Easybet Customer Service. My name is Ramon and I will be assisting you today.\n\n";
+                this.closing = "\n\nIf you have any further questions or need additional clarification, please feel free to contact us at any time.\n\nWe truly appreciate your trust in Easybet.\n\nBest regards,\nRamon Tariao\nEasybet Customer Service Support";
+                
+                this.categories = [
+                    "Account Queries", 
+                    "App Queries", 
+                    "Bet types", 
+                    "Bonus Queries", 
+                    "Deposit Queries", 
+                    "FICA Queries", 
+                    "Lucky numbers & Betgames Queries", 
+                    "Registration Queries", 
+                    "Responsible Gambling", 
+                    "Sports Betting Queries", 
+                    "Vegas Games Queries", 
+                    "Withdrawal Queries"
+                ];
+
+                this.state = {
+                    data: [],
+                    activeCategory: "Account Queries",
+                    searchQuery: ""
+                };
+                this.init();
+            }
+
+            init() {
+                this.loadData();
+                this.setupUI();
+                this.renderSidebar();
+                this.renderContent();
+            }
+
+            loadData() {
+                const stored = localStorage.getItem('easybet_ramon_v3');
+                if (stored) {
+                    this.state.data = JSON.parse(stored);
+                } else {
+                    this.resetData(false);
+                }
+            }
+
+            resetData(reload = true) {
+                this.state.data = RAW_DATA.map((item, i) => ({
+                    id: `eb_${i}_${Date.now()}`,
+                    ...item,
+                    script: this.generateScript(item.a, item.link)
+                }));
+                this.saveData();
+                if (reload) window.location.reload();
+            }
+
+            saveData() {
+                localStorage.setItem('easybet_ramon_v3', JSON.stringify(this.state.data));
+            }
+
+            generateScript(body, link) {
+                const greet = this.greetings[Math.floor(Math.random() * this.greetings.length)];
+                return `${greet}\n\n${this.intro}${body}\n\nFor more information, check out the full details here: ${link}${this.closing}`;
+            }
+
+            setupUI() {
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.state.searchQuery = e.target.value;
+                    this.renderContent();
+                });
+
+                const mobileBtn = document.getElementById('mobileMenuBtn');
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                const toggle = () => {
+                    sidebar.classList.toggle('-translate-x-full');
+                    overlay.classList.toggle('hidden');
+                };
+
+                mobileBtn.onclick = toggle;
+                overlay.onclick = toggle;
+            }
+
+            renderSidebar() {
+                const nav = document.getElementById('categoryNav');
+                nav.innerHTML = '';
+                
+                this.categories.forEach(cat => {
+                    const btn = document.createElement('button');
+                    const isActive = cat === this.state.activeCategory;
+                    btn.className = `w-full text-left px-4 py-3 rounded-lg text-xs font-medium transition-all mb-1 ${isActive ? 'bg-brand-600 text-white shadow-lg shadow-purple-900/40' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`;
+                    btn.innerHTML = cat;
+                    btn.onclick = () => {
+                        this.state.activeCategory = cat;
+                        this.state.searchQuery = '';
+                        document.getElementById('searchInput').value = '';
+                        this.renderSidebar();
+                        this.renderContent();
+                        if(window.innerWidth < 768) {
+                            document.getElementById('sidebar').classList.add('-translate-x-full');
+                            document.getElementById('sidebarOverlay').classList.add('hidden');
+                        }
+                    };
+                    nav.appendChild(btn);
+                });
+            }
+
+            renderContent() {
+                const container = document.getElementById('contentArea');
+                const empty = document.getElementById('emptyState');
+                
+                const items = this.state.searchQuery 
+                    ? this.state.data.filter(i => i.q.toLowerCase().includes(this.state.searchQuery.toLowerCase()) || i.script.toLowerCase().includes(this.state.searchQuery.toLowerCase()))
+                    : this.state.data.filter(i => i.cat === this.state.activeCategory);
+
+                document.getElementById('scriptCount').innerText = `${items.length} Script${items.length !== 1 ? 's' : ''}`;
+                container.innerHTML = '';
+
+                if(items.length === 0) {
+                    empty.classList.remove('hidden');
+                    return;
+                }
+                empty.classList.add('hidden');
+
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col fade-in overflow-hidden';
+                    div.innerHTML = `
+                        <div class="p-4 bg-gray-50 border-b border-gray-100">
+                            <h3 class="text-xs font-bold text-gray-800 leading-snug p-2 rounded-lg copyable-title" 
+                                onclick="app.copyQuestion('${item.q}')"
+                                title="Click to copy question">
+                                ${item.q}
+                            </h3>
+                        </div>
+                        <div class="p-4 flex-1">
+                            <div contenteditable="true" 
+                                 id="script-${item.id}"
+                                 class="text-[13px] text-gray-600 leading-relaxed whitespace-pre-wrap p-3 rounded-xl bg-gray-50 font-sans min-h-[220px]"
+                                 onblur="app.updateScript('${item.id}', this.innerText)">${item.script}</div>
+                        </div>
+                        <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                             <button onclick="app.revertScript('${item.id}')" class="text-[10px] font-bold text-gray-400 hover:text-red-500 py-2">Reset</button>
+                             <button onclick="app.copyScript('${item.id}')" class="bg-brand-600 text-white font-bold py-2 px-4 rounded-xl shadow-md hover:bg-brand-700 active:scale-95 transition-all text-xs">Copy Script</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            updateScript(id, text) {
+                const idx = this.state.data.findIndex(i => i.id === id);
+                if (idx !== -1) {
+                    this.state.data[idx].script = text;
+                    this.saveData();
+                }
+            }
+
+            revertScript(id) {
+                const idx = this.state.data.findIndex(i => i.id === id);
+                if (idx !== -1) {
+                    const original = RAW_DATA.find(r => r.q === this.state.data[idx].q);
+                    this.state.data[idx].script = this.generateScript(original.a, original.link);
+                    this.saveData();
+                    this.renderContent();
+                    this.showToast('Script reset', 'ph-arrow-counter-clockwise');
+                }
+            }
+
+            async copyQuestion(text) {
+                await this.toClipboard(text);
+                this.showToast('Question copied!');
+            }
+
+            async copyScript(id) {
+                const text = document.getElementById(`script-${id}`).innerText;
+                await this.toClipboard(text);
+                this.showToast('Full script copied!');
+            }
+
+            async toClipboard(text) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                } catch (e) {
+                    const ta = document.createElement("textarea");
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand("copy");
+                    ta.remove();
+                }
+            }
+
+            showToast(msg, icon = 'ph-check-circle') {
+                const toast = document.getElementById('toast');
+                document.getElementById('toastMsg').innerText = msg;
+                toast.querySelector('i').className = `ph ${icon} text-xl text-brand-500`;
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2000);
+            }
+        }
+
+        const app = new EasybetApp();
+    </script>
+</body>
+</html>
