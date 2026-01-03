@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Easybet Hub | Premium Dark</title>
     
     <!-- PREMIUM SVG TAB ICON -->
@@ -34,10 +34,15 @@
             background: radial-gradient(circle at top right, #1e1b4b, #020617 60%);
             background-attachment: fixed;
             color: #f8fafc;
+            /* Prevents bounce scroll on iOS */
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         .glass {
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -46,41 +51,35 @@
         .glass-card {
             background: rgba(30, 41, 59, 0.3);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .glass-card:hover {
-            background: rgba(30, 41, 59, 0.5);
-            border-color: rgba(167, 139, 250, 0.3);
-            transform: translateY(-5px) scale(1.01);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        @media (min-width: 1024px) {
+            .glass-card:hover {
+                background: rgba(30, 41, 59, 0.5);
+                border-color: rgba(167, 139, 250, 0.3);
+                transform: translateY(-5px) scale(1.01);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            }
         }
 
         .search-highlight {
-            background: linear-gradient(90deg, rgba(124, 58, 237, 0.4), rgba(192, 132, 252, 0.3));
+            background: rgba(124, 58, 237, 0.4);
             color: #fff;
-            padding: 1px 3px;
+            padding: 0 2px;
             border-radius: 4px;
-            font-weight: 600;
-            box-shadow: 0 0 12px rgba(124, 58, 237, 0.5);
-            text-shadow: 0 0 5px rgba(255,255,255,0.5);
             border-bottom: 2px solid #a78bfa;
-            animation: pulse-glow 2s infinite ease-in-out;
         }
 
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         
         [contenteditable]:focus { 
             outline: none; 
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.05);
             border-color: rgba(124, 58, 237, 0.5) !important;
         }
 
@@ -90,77 +89,114 @@
             color: #fff !important;
         }
 
-        .fade-in { animation: fadeIn 0.6s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile Sidebar Overlay */
+        #sidebarOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 35;
+        }
+        
+        #sidebarOverlay.active { display: block; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden font-sans">
+<body class="flex font-sans">
+
+    <!-- Mobile Overlay -->
+    <div id="sidebarOverlay" onclick="app.toggleSidebar()"></div>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="w-80 glass flex flex-col fixed md:relative h-full z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-500 ease-in-out">
-        <div class="p-8">
-            <!-- Sidebar Logo Section -->
-            <div class="flex items-center gap-4 mb-12">
-                <div class="w-12 h-12 relative flex-shrink-0 group">
-                    <div class="absolute inset-0 bg-brand-600 rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity"></div>
-                    <div class="relative w-full h-full bg-gradient-to-br from-brand-600 to-purple-400 rounded-2xl flex items-center justify-center shadow-2xl border border-white/20">
-                        <svg class="w-7 h-7 text-white" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M83.4 51.5H68.7l6.3-24.1c.6-2.4-1.3-4.6-3.7-4.1L37.1 63.1c-1.9.4-2.1 3-.3 3.7h14.7l-6.3 24.1c-.6 2.4 1.3 4.6 3.7 4.1l34.2-39.8c1.9-.4 2.1-3 .3-3.7z" fill="currentColor"/>
-                        </svg>
+    <aside id="sidebar" class="w-72 lg:w-80 glass flex flex-col fixed lg:relative h-full z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div class="p-6 lg:p-8">
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between mb-8 lg:mb-12">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 lg:w-12 lg:h-12 relative flex-shrink-0">
+                        <div class="absolute inset-0 bg-brand-600 rounded-xl lg:rounded-2xl blur-lg opacity-40"></div>
+                        <div class="relative w-full h-full bg-gradient-to-br from-brand-600 to-purple-400 rounded-xl lg:rounded-2xl flex items-center justify-center border border-white/20">
+                            <svg class="w-6 h-6 text-white" viewBox="0 0 128 128" fill="none">
+                                <path d="M83.4 51.5H68.7l6.3-24.1c.6-2.4-1.3-4.6-3.7-4.1L37.1 63.1c-1.9.4-2.1 3-.3 3.7h14.7l-6.3 24.1c-.6 2.4 1.3 4.6 3.7 4.1l34.2-39.8c1.9-.4 2.1-3 .3-3.7z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-white text-lg lg:text-xl tracking-tighter">Easybet Hub</h1>
+                        <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">Ramon Tariao</p>
                     </div>
                 </div>
-                <div>
-                    <h1 class="font-bold text-white text-xl tracking-tighter leading-none">Easybet Hub</h1>
-                    <p class="text-[10px] text-brand-400 font-bold uppercase tracking-[0.2em] mt-1">Ramon Tariao</p>
-                </div>
+                <!-- Close btn mobile -->
+                <button onclick="app.toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
             </div>
 
-            <nav class="space-y-2 overflow-y-auto custom-scrollbar pr-2 h-[calc(100vh-300px)]" id="categoryNav"></nav>
+            <nav class="space-y-1 overflow-y-auto custom-scrollbar pr-2 h-[calc(100vh-250px)] lg:h-[calc(100vh-300px)]" id="categoryNav"></nav>
         </div>
 
         <div class="mt-auto p-6">
-            <button onclick="app.resetData()" class="w-full flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 hover:text-red-400 bg-white/5 py-4 rounded-2xl transition-all border border-white/5 hover:border-red-400/20">
-                <i class="ph ph-arrow-counter-clockwise"></i> RESET ALL DATA
+            <button onclick="app.resetData()" class="w-full flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 hover:text-red-400 bg-white/5 py-3 rounded-xl transition-all border border-white/5">
+                <i class="ph ph-arrow-counter-clockwise"></i> RESET DATA
             </button>
         </div>
     </aside>
 
-    <!-- Main -->
-    <main class="flex-1 flex flex-col h-full relative w-full">
-        <header class="px-10 py-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div class="relative w-full max-w-3xl group">
-                <div class="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                    <i class="ph ph-magnifying-glass text-slate-400 group-focus-within:text-brand-500 transition-colors text-xl"></i>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full relative w-full overflow-hidden">
+        
+        <!-- Top Header -->
+        <header class="px-4 lg:px-10 py-4 lg:py-8 flex flex-col gap-4 lg:gap-8 border-b border-white/5 lg:border-none">
+            <div class="flex items-center justify-between lg:hidden">
+                <button onclick="app.toggleSidebar()" class="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10">
+                    <i class="ph ph-list text-white text-xl"></i>
+                </button>
+                <div class="text-[10px] font-bold text-brand-400 uppercase tracking-widest bg-brand-600/10 px-3 py-1 rounded-full border border-brand-600/20">
+                    Ramon Tariao
                 </div>
-                <input type="text" id="searchInput" placeholder="Search across all scripts..." 
-                    class="w-full pl-16 pr-8 py-5 bg-white/5 border border-white/10 rounded-3xl focus:ring-4 focus:ring-brand-600/20 focus:border-brand-600 focus:bg-white/10 text-base transition-all text-white placeholder:text-slate-500 shadow-2xl">
             </div>
-            <div id="scriptCount" class="px-6 py-3 glass rounded-2xl text-[11px] font-bold text-brand-400 tracking-widest uppercase">
-                0 Scripts
+
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-8">
+                <div class="relative w-full max-w-3xl group">
+                    <div class="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                        <i class="ph ph-magnifying-glass text-slate-400 group-focus-within:text-brand-500 text-lg"></i>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Search across all scripts..." 
+                        class="w-full pl-14 lg:pl-16 pr-6 py-4 lg:py-5 bg-white/5 border border-white/10 rounded-2xl lg:rounded-3xl focus:ring-4 focus:ring-brand-600/20 focus:border-brand-600 focus:bg-white/10 text-sm lg:text-base transition-all text-white placeholder:text-slate-500 shadow-xl">
+                </div>
+                <div id="scriptCount" class="hidden lg:block px-6 py-3 glass rounded-2xl text-[11px] font-bold text-brand-400 tracking-widest uppercase">
+                    0 Scripts
+                </div>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto px-10 pb-20 custom-scrollbar" id="mainScroll">
-            <div id="contentArea" class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-10"></div>
-            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-40">
-                <i class="ph ph-ghost text-6xl text-slate-700 mb-4"></i>
-                <h3 class="text-white font-bold text-xl">No matching scripts</h3>
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto px-4 lg:px-10 pb-20 pt-4 lg:pt-0 custom-scrollbar" id="mainScroll">
+            <div id="contentArea" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 lg:gap-10"></div>
+            
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 lg:py-40">
+                <i class="ph ph-ghost text-5xl lg:text-6xl text-slate-700 mb-4"></i>
+                <h3 class="text-white font-bold text-lg lg:text-xl text-center">No matching scripts found</h3>
             </div>
         </div>
     </main>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-12 right-12 glass px-8 py-5 rounded-3xl shadow-2xl transform translate-y-32 opacity-0 transition-all duration-500 z-50 flex items-center gap-4 border border-brand-600/30">
-        <div class="w-10 h-10 bg-brand-600 rounded-full flex items-center justify-center">
-            <i class="ph-bold ph-check text-white text-xl"></i>
+    <div id="toast" class="fixed bottom-6 lg:bottom-12 right-6 lg:right-12 glass px-6 lg:px-8 py-4 lg:py-5 rounded-2xl lg:rounded-3xl shadow-2xl transform translate-y-32 opacity-0 transition-all duration-500 z-50 flex items-center gap-4 border border-brand-600/30">
+        <div class="w-8 h-8 lg:w-10 lg:h-10 bg-brand-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="ph-bold ph-check text-white text-lg lg:text-xl"></i>
         </div>
         <div>
-            <p id="toastMsg" class="text-sm font-bold text-white">Copied!</p>
-            <p class="text-[10px] text-slate-500 uppercase tracking-tighter">Ready for customer</p>
+            <p id="toastMsg" class="text-xs lg:text-sm font-bold text-white">Copied!</p>
+            <p class="text-[9px] lg:text-[10px] text-slate-500 uppercase tracking-tighter">Ready for customer</p>
         </div>
     </div>
 
     <script>
+        // Data same as your original RAW_DATA (Omitted for brevity in this display, but use your full list)
         const RAW_DATA = [
             { cat: "Account Queries", q: "How do I recover my forgotten password?", link: "https://easybet.co.za/page/account-queries/forgot-password", a: "I understand how frustrating it can be to lose access to your account. To get you back in, click LOGIN at the top right corner of your screen. Next to Forgot password? Click RECOVER it.\n\nThe first option to recover your password is to choose MOBILE NUMBER.\n\nType in your mobile number\nClick PROCEED\nThe second option to recover your password is to choose EMAIL.\n\nType in your email address\nClick PROCEED\nAfter you have entered either your mobile number or email:\n\nA confirmation code will be sent to your cellphone or email\nEnter the confirmation code\nAfter you have entered the confirmation code:\n\nEnter your New Password\nRe-enter your New Password\nClick FINISH\nYour password has been reset successfully" },
             { cat: "Account Queries", q: "How do I change my mobile number?", link: "https://easybet.co.za/page/account-queries/number-change", a: "I can certainly help you with the steps to update your contact information. To update your mobile number, please email customer support at help@easybet.co.za\n\nIf you need more information or help, please contact us via email or live chat.\n\nAny changes will require a re-submission of your FICA documents.\n\nID\nProof of Residence (Preferably a bank statement that should not be more than 3 months old)\nSelfie with your ID" },
@@ -230,7 +266,6 @@
             { cat: "Withdrawal Queries", q: "Why is my withdrawal delayed?", link: "https://easybet.co.za/page/withdrawal-queries/withdrawal-rejected", a: "I understand the delay is concerning and I can explain our security processing times. For security reasons, we can only approve up to two withdrawals for your account every 24 hours. Your next withdrawal requests will be processed once the 24 hour period has passed." }
         ];
 
-
         class EasybetApp {
             constructor() {
                 this.greetings = ["Hello there!", "Hi there!", "Good day!", "Greetings!"];
@@ -239,7 +274,12 @@
                 
                 this.categories = ["Account Queries", "App Queries", "Bet types", "Bonus Queries", "Deposit Queries", "FICA Queries", "Lucky numbers & Betgames Queries", "Registration Queries", "Responsible Gambling", "Sports Betting Queries", "Vegas Games Queries", "Withdrawal Queries"];
 
-                this.state = { data: [], activeCategory: "Account Queries", searchQuery: "" };
+                this.state = { 
+                    data: [], 
+                    activeCategory: "Account Queries", 
+                    searchQuery: "",
+                    sidebarOpen: false
+                };
                 this.init();
             }
 
@@ -251,7 +291,7 @@
             }
 
             loadData() {
-                const stored = localStorage.getItem('easybet_ramon_v3');
+                const stored = localStorage.getItem('easybet_ramon_v4');
                 if (stored) { this.state.data = JSON.parse(stored); } 
                 else { this.resetData(false); }
             }
@@ -266,7 +306,7 @@
                 if (reload) window.location.reload();
             }
 
-            saveData() { localStorage.setItem('easybet_ramon_v3', JSON.stringify(this.state.data)); }
+            saveData() { localStorage.setItem('easybet_ramon_v4', JSON.stringify(this.state.data)); }
 
             generateScript(body, link) {
                 const greet = this.greetings[Math.floor(Math.random() * this.greetings.length)];
@@ -277,6 +317,20 @@
                 if (!this.state.searchQuery || this.state.searchQuery.length < 2) return text;
                 const regex = new RegExp(`(${this.state.searchQuery})`, 'gi');
                 return text.replace(regex, `<span class="search-highlight">$1</span>`);
+            }
+
+            toggleSidebar() {
+                const sb = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                this.state.sidebarOpen = !this.state.sidebarOpen;
+                
+                if(this.state.sidebarOpen) {
+                    sb.classList.remove('-translate-x-full');
+                    overlay.classList.add('active');
+                } else {
+                    sb.classList.add('-translate-x-full');
+                    overlay.classList.remove('active');
+                }
             }
 
             setupUI() {
@@ -292,14 +346,15 @@
                 this.categories.forEach(cat => {
                     const btn = document.createElement('button');
                     const isActive = cat === this.state.activeCategory;
-                    btn.className = `w-full text-left px-5 py-4 rounded-2xl text-[12px] font-bold transition-all mb-1 flex items-center justify-between group ${isActive ? 'nav-active' : 'text-slate-500 hover:text-white hover:bg-white/5'}`;
-                    btn.innerHTML = `<span>${cat}</span> <i class="ph ph-caret-right ${isActive ? 'opacity-100' : 'opacity-0'}"></i>`;
+                    btn.className = `w-full text-left px-4 lg:px-5 py-3 lg:py-4 rounded-xl lg:rounded-2xl text-[11px] lg:text-[12px] font-bold transition-all mb-1 flex items-center justify-between group ${isActive ? 'nav-active' : 'text-slate-500 hover:text-white hover:bg-white/5'}`;
+                    btn.innerHTML = `<span>${cat}</span> <i class="ph ph-caret-right text-xs ${isActive ? 'opacity-100' : 'opacity-0'}"></i>`;
                     btn.onclick = () => {
                         this.state.activeCategory = cat;
                         this.state.searchQuery = '';
                         document.getElementById('searchInput').value = '';
                         this.renderSidebar();
                         this.renderContent();
+                        if(window.innerWidth < 1024) this.toggleSidebar();
                     };
                     nav.appendChild(btn);
                 });
@@ -323,26 +378,26 @@
 
                 items.forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'glass-card rounded-[35px] flex flex-col fade-in overflow-hidden';
+                    div.className = 'glass-card rounded-[24px] lg:rounded-[35px] flex flex-col fade-in overflow-hidden h-fit';
                     div.innerHTML = `
-                        <div class="p-8 pb-4">
-                            <h3 class="text-[13px] font-bold text-white leading-relaxed cursor-pointer hover:text-brand-500 transition-colors flex items-start gap-3" onclick="app.copyQuestion('${item.q}')">
-                                <i class="ph ph-chat-text text-brand-500 text-lg"></i>
+                        <div class="p-5 lg:p-8 pb-3 lg:pb-4">
+                            <h3 class="text-xs lg:text-[13px] font-bold text-white leading-relaxed flex items-start gap-3">
+                                <i class="ph ph-chat-text text-brand-500 text-base lg:text-lg mt-0.5"></i>
                                 ${this.highlightMatch(item.q)}
                             </h3>
                         </div>
-                        <div class="px-8 pb-6 flex-1">
+                        <div class="px-5 lg:px-8 pb-5 lg:pb-6 flex-1">
                             <div contenteditable="true" 
                                  id="script-${item.id}"
-                                 class="text-[13px] text-slate-300 leading-relaxed whitespace-pre-wrap p-6 rounded-3xl bg-black/40 border border-white/5 font-sans min-h-[220px]"
+                                 class="text-[12px] lg:text-[13px] text-slate-300 leading-relaxed whitespace-pre-wrap p-4 lg:p-6 rounded-2xl lg:rounded-3xl bg-black/40 border border-white/5 font-sans min-h-[180px] lg:min-h-[220px]"
                                  onblur="app.updateScript('${item.id}', this.innerText)">${this.highlightMatch(item.script)}</div>
                         </div>
-                        <div class="p-8 pt-0 flex gap-3">
-                             <button onclick="app.copyScript('${item.id}')" class="flex-1 bg-brand-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-brand-600/30 hover:bg-brand-500 active:scale-95 transition-all text-[11px] uppercase tracking-widest flex items-center justify-center gap-2">
-                                <i class="ph-bold ph-copy"></i> Copy To Clipboard
+                        <div class="p-5 lg:p-8 pt-0 flex gap-2 lg:gap-3">
+                             <button onclick="app.copyScript('${item.id}')" class="flex-1 bg-brand-600 text-white font-bold py-3 lg:py-4 rounded-xl lg:rounded-2xl shadow-xl shadow-brand-600/20 hover:bg-brand-500 active:scale-95 transition-all text-[10px] lg:text-[11px] uppercase tracking-widest flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-copy"></i> Copy Script
                              </button>
-                             <button onclick="app.revertScript('${item.id}')" class="p-4 rounded-2xl border border-white/10 text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-all">
-                                <i class="ph ph-arrow-counter-clockwise"></i>
+                             <button onclick="app.revertScript('${item.id}')" class="p-3 lg:p-4 rounded-xl lg:rounded-2xl border border-white/10 text-slate-500 hover:text-red-400 transition-all flex items-center justify-center">
+                                <i class="ph ph-arrow-counter-clockwise text-lg"></i>
                              </button>
                         </div>
                     `;
@@ -368,8 +423,6 @@
                     this.showToast('Script Restored', 'ph-arrow-counter-clockwise');
                 }
             }
-
-            async copyQuestion(text) { await this.toClipboard(text); this.showToast('Question Copied'); }
 
             async copyScript(id) {
                 const text = document.getElementById(`script-${id}`).innerText;
